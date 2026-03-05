@@ -1,0 +1,248 @@
+import 'package:flutter/material.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
+
+class CollegeDetailsPage extends StatelessWidget {
+  final String docId;
+
+  const CollegeDetailsPage({super.key, required this.docId});
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      backgroundColor: const Color(0xFFF3F0F7),
+      appBar: AppBar(
+        backgroundColor: Colors.white,
+        elevation: 0,
+        iconTheme: const IconThemeData(color: Colors.deepPurple),
+        title: const Text(
+          "College Details",
+          style: TextStyle(
+            color: Colors.deepPurple,
+            fontWeight: FontWeight.bold,
+          ),
+        ),
+      ),
+      body: FutureBuilder<DocumentSnapshot>(
+        future:
+        FirebaseFirestore.instance.collection("colleges").doc(docId).get(),
+        builder: (context, snapshot) {
+          // Loading
+          if (snapshot.connectionState == ConnectionState.waiting) {
+            return const Center(child: CircularProgressIndicator());
+          }
+
+          // Error
+          if (snapshot.hasError) {
+            return const Center(child: Text("Something went wrong ❌"));
+          }
+
+          // No data
+          if (!snapshot.hasData || !snapshot.data!.exists) {
+            return const Center(child: Text("College not found 😕"));
+          }
+
+          final data = snapshot.data!.data() as Map<String, dynamic>;
+
+          // ✅ Fields from your screenshot
+          final String name = (data["name"] ?? "No Name").toString();
+          final String location = (data["location"] ?? "").toString();
+          final String fees = (data["fees"] ?? "").toString();
+          final String imageUrl = (data["imageUrl"] ?? "").toString();
+
+          // Field has a space: "Placement Ratio"
+          final String placementRatio =
+          (data["Placement Ratio"] ?? "").toString();
+
+          // Courses array
+          final List coursesRaw =
+          (data["courses"] is List) ? data["courses"] : [];
+          final List<String> courses =
+          coursesRaw.map((e) => e.toString()).toList();
+
+          return ListView(
+            padding: const EdgeInsets.all(16),
+            children: [
+              // ---------------- IMAGE ----------------
+              ClipRRect(
+                borderRadius: BorderRadius.circular(18),
+                child: imageUrl.trim().isEmpty
+                    ? Container(
+                  height: 200,
+                  color: Colors.deepPurple.shade100,
+                  child: const Center(
+                    child: Icon(Icons.school,
+                        size: 90, color: Colors.deepPurple),
+                  ),
+                )
+                    : Image.network(
+                  imageUrl,
+                  height: 200,
+                  width: double.infinity,
+                  fit: BoxFit.cover,
+                  errorBuilder: (context, error, stackTrace) {
+                    return Container(
+                      height: 200,
+                      color: Colors.deepPurple.shade100,
+                      child: const Center(
+                        child: Icon(Icons.school,
+                            size: 90, color: Colors.deepPurple),
+                      ),
+                    );
+                  },
+                ),
+              ),
+
+              const SizedBox(height: 16),
+
+              // ---------------- MAIN DETAILS CARD ----------------
+              Container(
+                padding: const EdgeInsets.all(16),
+                decoration: BoxDecoration(
+                  color: Colors.white,
+                  borderRadius: BorderRadius.circular(18),
+                  boxShadow: const [
+                    BoxShadow(color: Colors.black12, blurRadius: 10),
+                  ],
+                ),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      name,
+                      style: const TextStyle(
+                        fontSize: 20,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+
+                    const SizedBox(height: 10),
+
+                    // Location
+                    if (location.trim().isNotEmpty)
+                      Row(
+                        children: [
+                          const Icon(Icons.location_on,
+                              size: 18, color: Colors.deepPurple),
+                          const SizedBox(width: 6),
+                          Expanded(
+                            child: Text(
+                              location,
+                              style: const TextStyle(color: Colors.black54),
+                            ),
+                          ),
+                        ],
+                      ),
+
+                    const SizedBox(height: 10),
+
+                    // Fees
+                    if (fees.trim().isNotEmpty)
+                      Text(
+                        "Fees: $fees",
+                        style: const TextStyle(
+                          fontWeight: FontWeight.w600,
+                        ),
+                      ),
+
+                    const SizedBox(height: 10),
+
+                    // Placement Ratio
+                    if (placementRatio.trim().isNotEmpty)
+                      Text(
+                        "Placement Ratio: $placementRatio",
+                        style: const TextStyle(
+                          fontWeight: FontWeight.w600,
+                        ),
+                      ),
+                  ],
+                ),
+              ),
+
+              const SizedBox(height: 16),
+
+              // ---------------- COURSES CARD ----------------
+              if (courses.isNotEmpty)
+                Container(
+                  padding: const EdgeInsets.all(16),
+                  decoration: BoxDecoration(
+                    color: Colors.white,
+                    borderRadius: BorderRadius.circular(18),
+                    boxShadow: const [
+                      BoxShadow(color: Colors.black12, blurRadius: 10),
+                    ],
+                  ),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      const Text(
+                        "Courses Offered",
+                        style: TextStyle(
+                          fontSize: 18,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                      const SizedBox(height: 12),
+                      Wrap(
+                        spacing: 10,
+                        runSpacing: 10,
+                        children: courses.map((course) {
+                          return Container(
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 14,
+                              vertical: 10,
+                            ),
+                            decoration: BoxDecoration(
+                              color: Colors.deepPurple.shade50,
+                              borderRadius: BorderRadius.circular(30),
+                            ),
+                            child: Text(
+                              course,
+                              style: const TextStyle(
+                                color: Colors.deepPurple,
+                                fontWeight: FontWeight.w600,
+                              ),
+                            ),
+                          );
+                        }).toList(),
+                      ),
+                    ],
+                  ),
+                ),
+
+              const SizedBox(height: 18),
+
+              // ---------------- FAVORITES BUTTON (UI ONLY) ----------------
+              SizedBox(
+                width: double.infinity,
+                child: ElevatedButton.icon(
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: const Color(0xFF4B1D6D),
+                    padding: const EdgeInsets.symmetric(vertical: 14),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(14),
+                    ),
+                  ),
+                  onPressed: () {
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      const SnackBar(
+                        content: Text("Added to Favorites ❤️"),
+                      ),
+                    );
+                  },
+                  icon: const Icon(Icons.favorite, color: Colors.white),
+                  label: const Text(
+                    "Add to Favorites",
+                    style: TextStyle(
+                      color: Colors.white,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                ),
+              ),
+            ],
+          );
+        },
+      ),
+    );
+  }
+}

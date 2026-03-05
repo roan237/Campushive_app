@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "134268132184",
+    "project_id": "campus-hive-638d0",
+    "storage_bucket": "campus-hive-638d0.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:134268132184:android:0b976ed44a353a8d37a32d",
+        "android_client_info": {
+          "package_name": "com.example.mini"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBMk8TaOMxk7zhKyHi_yF92funZx2BkU24"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
