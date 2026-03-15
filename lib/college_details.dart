@@ -52,12 +52,12 @@ class CollegeDetailsPage extends StatelessWidget {
           // Field has a space: "Placement Ratio"
           final String placementRatio =
           (data["Placement Ratio"] ?? "").toString();
+          final List courses =
+          (data["courses"] is List) ? data["courses"] : [];
 
           // Courses array
-          final List coursesRaw =
-          (data["courses"] is List) ? data["courses"] : [];
-          final List<String> courses =
-          coursesRaw.map((e) => e.toString()).toList();
+
+
 
           return ListView(
             padding: const EdgeInsets.all(16),
@@ -181,26 +181,40 @@ class CollegeDetailsPage extends StatelessWidget {
                           fontWeight: FontWeight.bold,
                         ),
                       ),
+
                       const SizedBox(height: 12),
+
                       Wrap(
                         spacing: 10,
                         runSpacing: 10,
                         children: courses.map((course) {
+                          final c = course as Map<String, dynamic>;
+
                           return Container(
-                            padding: const EdgeInsets.symmetric(
-                              horizontal: 14,
-                              vertical: 10,
-                            ),
+                            padding: const EdgeInsets.all(14),
                             decoration: BoxDecoration(
                               color: Colors.deepPurple.shade50,
-                              borderRadius: BorderRadius.circular(30),
+                              borderRadius: BorderRadius.circular(18),
                             ),
-                            child: Text(
-                              course,
-                              style: const TextStyle(
-                                color: Colors.deepPurple,
-                                fontWeight: FontWeight.w600,
-                              ),
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+
+                                Text(
+                                  c["Name"] ?? "",
+                                  style: const TextStyle(
+                                    fontWeight: FontWeight.bold,
+                                    color: Colors.deepPurple,
+                                  ),
+                                ),
+
+                                const SizedBox(height: 4),
+
+                                Text("Last Rank: ${c["last rank"] ?? "-"}"),
+
+                                Text("Accreditation: ${c["accreditation"] ?? "-"}"),
+
+                              ],
                             ),
                           );
                         }).toList(),
@@ -222,12 +236,27 @@ class CollegeDetailsPage extends StatelessWidget {
                       borderRadius: BorderRadius.circular(14),
                     ),
                   ),
-                  onPressed: () {
+                  onPressed: () async {
+
+                    const userId = "demoUser";
+
+                    await FirebaseFirestore.instance
+                        .collection("favorites")
+                        .doc(userId)
+                        .collection("colleges")
+                        .doc(docId)
+                        .set({
+                      "name": data["name"],
+                      "location": data["location"],
+                      "imageUrl": data["imageUrl"],
+                    });
+
                     ScaffoldMessenger.of(context).showSnackBar(
                       const SnackBar(
                         content: Text("Added to Favorites ❤️"),
                       ),
                     );
+
                   },
                   icon: const Icon(Icons.favorite, color: Colors.white),
                   label: const Text(

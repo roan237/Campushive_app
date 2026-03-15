@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'main.dart';
 import 'edit.dart';
+import 'myactivity.dart';
 
 // ========================= MY PROFILE PAGE =========================
 class MyProfilePage extends StatelessWidget {
@@ -117,7 +118,7 @@ class MyProfilePage extends StatelessWidget {
             _profileButton(
               context: context,
               title: "My Activity",
-              subtitle: "Wishlist & saved comparisons",
+              subtitle: "Wishlist",
               icon: Icons.local_activity_rounded,
               color: const Color(0xFF6A11CB),
               onTap: () {
@@ -251,115 +252,5 @@ class MyProfilePage extends StatelessWidget {
   }
 }
 
-// ========================= MY ACTIVITY PAGE (EMPTY NOW) =========================
-class MyActivityPage extends StatelessWidget {
-  const MyActivityPage({super.key});
 
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: const Color(0xFFF7F7FB),
-      appBar: AppBar(
-        backgroundColor: Colors.white,
-        elevation: 0,
-        title: const Text(
-          "My Activity",
-          style: TextStyle(
-            color: Color(0xFF2D2D2D),
-            fontWeight: FontWeight.bold,
-          ),
-        ),
-        centerTitle: true,
-        iconTheme: const IconThemeData(color: Colors.black),
-      ),
-      body: Padding(
-        padding: const EdgeInsets.all(18),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            const Text(
-              "⭐ Wishlist",
-              style: TextStyle(
-                fontSize: 18,
-                fontWeight: FontWeight.bold,
-                color: Color(0xFF2D2D2D),
-              ),
-            ),
-            const SizedBox(height: 12),
-
-            Container(
-              width: double.infinity,
-              padding: const EdgeInsets.all(18),
-              decoration: BoxDecoration(
-                color: Colors.white,
-                borderRadius: BorderRadius.circular(18),
-                boxShadow: [
-                  BoxShadow(
-                    color: Colors.black.withOpacity(0.06),
-                    blurRadius: 12,
-                    offset: const Offset(0, 6),
-                  ),
-                ],
-              ),
-              child: Text(
-                "No colleges wishlisted yet 😄",
-                style: TextStyle(
-                  color: Colors.grey.shade600,
-                  fontSize: 14,
-                ),
-              ),
-            ),
-
-            const SizedBox(height: 26),
-
-            const Text(
-              "📌 Saved Comparisons",
-              style: TextStyle(
-                fontSize: 18,
-                fontWeight: FontWeight.bold,
-                color: Color(0xFF2D2D2D),
-              ),
-            ),
-            const SizedBox(height: 12),
-
-            Container(
-              width: double.infinity,
-              padding: const EdgeInsets.all(18),
-              decoration: BoxDecoration(
-                color: Colors.white,
-                borderRadius: BorderRadius.circular(18),
-                boxShadow: [
-                  BoxShadow(
-                    color: Colors.black.withOpacity(0.06),
-                    blurRadius: 12,
-                    offset: const Offset(0, 6),
-                  ),
-                ],
-              ),
-              child: Text(
-                "No comparisons saved yet 😄",
-                style: TextStyle(
-                  color: Colors.grey.shade600,
-                  fontSize: 14,
-                ),
-              ),
-            ),
-
-            const SizedBox(height: 30),
-
-            Center(
-              child: Text(
-                "Later this will load from Firebase 🔥",
-                style: TextStyle(
-                  color: Colors.grey.shade600,
-                  fontSize: 13,
-                ),
-              ),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-}
 

@@ -4,8 +4,10 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 
 import 'comparison.dart';
 import 'myprofile.dart';
-import 'fav.dart';
+import 'admission_predictor.dart';
 import 'college_details.dart';
+import 'explore_colleges.dart';
+import 'admission_predictor.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -594,7 +596,11 @@ class _HomePageState extends State<HomePage> {
 
   final TextEditingController searchC = TextEditingController();
   String searchText = "";
-
+  String selectedLocation = "";
+  String selectedCourse = "";
+  String selectedFees = "";
+  String selectedPlacement = "";
+  String selectedAccreditation = "";
   @override
   void dispose() {
     searchC.dispose();
@@ -640,7 +646,19 @@ class _HomePageState extends State<HomePage> {
           TextField(
             controller: searchC,
             onChanged: (val) {
-              setState(() => searchText = val.trim().toLowerCase());
+              setState(() {
+                searchText = val.trim().toLowerCase();
+              });
+            },
+            onSubmitted: (value) {
+              Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (_) => ExploreCollegesPage(
+                    search: value.trim().toLowerCase(),
+                  ),
+                ),
+              );
             },
             decoration: InputDecoration(
               hintText: "Search colleges...",
@@ -655,74 +673,211 @@ class _HomePageState extends State<HomePage> {
           ),
           const SizedBox(height: 16),
 
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              _chip("Location"),
-              _chip("Course"),
-              _chip("College"),
-            ],
+          Align(
+            alignment: Alignment.centerRight,
+            child:ElevatedButton.icon(
+              onPressed: _openFilterPanel,
+              icon: const Icon(Icons.filter_alt, color: Colors.white),
+              label: const Text(
+                "Filters",
+                style: TextStyle(color: Colors.white),
+              ),
+              style: ElevatedButton.styleFrom(
+                backgroundColor: const Color(0xFF6A11CB), // your purple
+                foregroundColor: Colors.white,
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(25),
+                ),
+                padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
+              ),
+            )
           ),
+          const SizedBox(height: 20),
 
           const SizedBox(height: 20),
 
-          // Firestore colleges list
-          StreamBuilder<QuerySnapshot>(
-            stream:
-            FirebaseFirestore.instance.collection("colleges").snapshots(),
-            builder: (context, snapshot) {
-              if (snapshot.hasError) {
-                return const Center(
-                  child: Text("Something went wrong ❌"),
-                );
-              }
+// 🔥 TRENDING COLLEGES
+          const Text(
+            "🔥 Trending Colleges",
+            style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+          ),
 
-              if (snapshot.connectionState == ConnectionState.waiting) {
-                return const Center(
-                  child: Padding(
-                    padding: EdgeInsets.all(20),
-                    child: CircularProgressIndicator(),
+          const SizedBox(height: 10),
+
+          SizedBox(
+            height: 190,
+            child: StreamBuilder<QuerySnapshot>(
+              stream: FirebaseFirestore.instance
+                  .collection("colleges")
+                  .where("trending", isEqualTo: true)
+                  .snapshots(),
+              builder: (context, snapshot) {
+
+                if (!snapshot.hasData) {
+                  return const Center(child: CircularProgressIndicator());
+                }
+
+                final docs = snapshot.data!.docs;
+
+                return ListView(
+                  scrollDirection: Axis.horizontal,
+                  children: docs.map((doc) {
+
+                    final data = doc.data() as Map<String, dynamic>;
+
+                    return Container(
+                      width: 280,
+                      margin: const EdgeInsets.only(right: 14),
+                      child: _collegeCardFromFirestore(
+                        docId: doc.id,
+                        name: data["name"] ?? "",
+                        imageUrl: data["imageUrl"] ?? "",
+                        location: data["location"] ?? "",
+                      ),
+                    );
+
+                  }).toList(),
+                );
+              },
+            ),
+          ),
+
+          const SizedBox(height: 25),
+
+// ⭐ TOP RANKED COLLEGES
+          const Text(
+            "⭐ Top Ranked Colleges",
+            style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+          ),
+
+          const SizedBox(height: 10),
+
+          SizedBox(
+            height: 190,
+            child: StreamBuilder<QuerySnapshot>(
+              stream: FirebaseFirestore.instance
+                  .collection("colleges")
+                  .orderBy("ranking")
+                  .limit(5)
+                  .snapshots(),
+              builder: (context, snapshot) {
+
+                if (!snapshot.hasData) {
+                  return const Center(child: CircularProgressIndicator());
+                }
+
+                final docs = snapshot.data!.docs;
+
+                return ListView(
+                  scrollDirection: Axis.horizontal,
+                  children: docs.map((doc) {
+
+                    final data = doc.data() as Map<String, dynamic>;
+
+                    return Container(
+                      width: 280,
+                      margin: const EdgeInsets.only(right: 14),
+                      child: _collegeCardFromFirestore(
+                        docId: doc.id,
+                        name: data["name"] ?? "",
+                        imageUrl: data["imageUrl"] ?? "",
+                        location: data["location"] ?? "",
+                      ),
+                    );
+
+                  }).toList(),
+                );
+              },
+            ),
+          ),
+
+          const SizedBox(height: 25),
+
+// 💼 BEST PLACEMENT COLLEGES
+          const Text(
+            "💼 Best Placement Colleges",
+            style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+          ),
+
+          const SizedBox(height: 10),
+
+          SizedBox(
+            height: 190,
+            child: StreamBuilder<QuerySnapshot>(
+              stream: FirebaseFirestore.instance
+                  .collection("colleges")
+                  .orderBy("Placement Ratio", descending: true)
+                  .limit(5)
+                  .snapshots(),
+              builder: (context, snapshot) {
+
+                if (!snapshot.hasData) {
+                  return const Center(child: CircularProgressIndicator());
+                }
+
+                final docs = snapshot.data!.docs;
+
+                return ListView(
+                  scrollDirection: Axis.horizontal,
+                  children: docs.map((doc) {
+
+                    final data = doc.data() as Map<String, dynamic>;
+
+                    return Container(
+                      width: 280,
+                      margin: const EdgeInsets.only(right: 14),
+                      child: _collegeCardFromFirestore(
+                        docId: doc.id,
+                        name: data["name"] ?? "",
+                        imageUrl: data["imageUrl"] ?? "",
+                        location: data["location"] ?? "",
+                      ),
+                    );
+
+                  }).toList(),
+                );
+              },
+            ),
+          ),
+
+          const SizedBox(height: 30),
+
+// 🎓 EXPLORE COLLEGES
+
+
+          const SizedBox(height: 15),
+
+// Firestore colleges list
+          const SizedBox(height: 30),
+
+          Center(
+            child: ElevatedButton(
+              style: ElevatedButton.styleFrom(
+                backgroundColor: const Color(0xFF6A11CB),
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 40,
+                  vertical: 14,
+                ),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(25),
+                ),
+              ),
+              onPressed: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (_) => const ExploreCollegesPage(),
                   ),
                 );
-              }
-
-              final docs = snapshot.data!.docs;
-
-              // Filter using search text
-              final filteredDocs = docs.where((doc) {
-                final data = doc.data() as Map<String, dynamic>;
-                final name = (data["name"] ?? "").toString().toLowerCase();
-                final location =
-                (data["location"] ?? "").toString().toLowerCase();
-
-                if (searchText.isEmpty) return true;
-
-                return name.contains(searchText) ||
-                    location.contains(searchText);
-              }).toList();
-
-              if (filteredDocs.isEmpty) {
-                return const Center(
-                  child: Padding(
-                    padding: EdgeInsets.all(20),
-                    child: Text("No colleges found 😕"),
-                  ),
-                );
-              }
-
-              return Column(
-                children: filteredDocs.map((doc) {
-                  final data = doc.data() as Map<String, dynamic>;
-
-                  return _collegeCardFromFirestore(
-                    docId: doc.id,
-                    name: data["name"] ?? "No Name",
-                    imageUrl: data["imageUrl"] ?? "",
-                    location: data["location"] ?? "",
-                  );
-                }).toList(),
-              );
-            },
+              },
+              child: const Text(
+                "Explore More Colleges",
+                style: TextStyle(
+                  color: Colors.white,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+            ),
           ),
         ],
       ),
@@ -743,9 +898,11 @@ class _HomePageState extends State<HomePage> {
           } else if (i == 2) {
             Navigator.push(
               context,
-              MaterialPageRoute(builder: (_) => const FavoritesPage()),
+              MaterialPageRoute(
+                builder: (_) => const AdmissionPredictorPage(),
+              ),
             );
-          } else if (i == 3) {
+          }else if (i == 3) {
             Navigator.push(
               context,
               MaterialPageRoute(builder: (_) => const MyProfilePage()),
@@ -756,7 +913,7 @@ class _HomePageState extends State<HomePage> {
           BottomNavigationBarItem(icon: Icon(Icons.home), label: "Home"),
           BottomNavigationBarItem(icon: Icon(Icons.compare), label: "Compare"),
           BottomNavigationBarItem(
-              icon: Icon(Icons.favorite), label: "Favourites"),
+              icon: Icon(Icons.analytics), label: "Predictor"),
           BottomNavigationBarItem(icon: Icon(Icons.person), label: "My Profile"),
         ],
       ),
@@ -764,6 +921,7 @@ class _HomePageState extends State<HomePage> {
   }
 
   // ---------------- UI HELPERS ----------------
+
   Widget _chip(String text) {
     return GestureDetector(
       onTap: () {
@@ -784,6 +942,324 @@ class _HomePageState extends State<HomePage> {
       ),
     );
   }
+  void _openFilterPanel() {
+    TextEditingController locationC =
+    TextEditingController(text: selectedLocation);
+
+    TextEditingController courseC =
+    TextEditingController(text: selectedCourse);
+
+    TextEditingController feesC =
+    TextEditingController(text: selectedFees);
+
+    TextEditingController placementC =
+    TextEditingController(text: selectedPlacement);
+
+    TextEditingController accC =
+    TextEditingController(text: selectedAccreditation);
+
+    showModalBottomSheet(
+        context: context,
+        isScrollControlled: true,
+        backgroundColor: Colors.transparent,
+        builder: (context) {
+          return Container(
+            padding: EdgeInsets.only(
+              left: 20,
+              right: 20,
+              top: 25,
+              bottom: MediaQuery.of(context).viewInsets.bottom + 20,
+            ),
+            decoration: const BoxDecoration(
+              color: Color(0xFFF7F7FB),
+              borderRadius: BorderRadius.vertical(top: Radius.circular(30)),
+            ),
+            child: SingleChildScrollView(
+              child: Column(
+                children: [
+
+
+                Container(
+                width: 40,
+                height: 5,
+                decoration: BoxDecoration(
+                  color: Colors.grey[400],
+                  borderRadius: BorderRadius.circular(10),
+                ),
+              ),
+
+              const SizedBox(height: 15),
+
+              const Text(
+                "Smart Filters",
+                style: TextStyle(
+                  fontSize: 22,
+                  fontWeight: FontWeight.bold,
+                  color: Color(0xFF2D2D2D),
+                ),
+              ),
+
+              const SizedBox(height: 25),
+
+              _filterField(
+                controller: locationC,
+                icon: Icons.location_on,
+                label: "Location",
+              ),
+
+              const SizedBox(height: 15),
+
+                  StreamBuilder<QuerySnapshot>(
+                    stream: FirebaseFirestore.instance.collection("colleges").snapshots(),
+                    builder: (context, snapshot) {
+
+                      if (!snapshot.hasData) {
+                        return const CircularProgressIndicator();
+                      }
+
+                      List<String> courses = [];
+
+                      for (var doc in snapshot.data!.docs) {
+                        final data = doc.data() as Map<String, dynamic>;
+
+                        if (data["courses"] != null) {
+                          for (var c in data["courses"]) {
+                            String name = (c["Name"] ?? "").toString().toLowerCase();
+                            if (name.isNotEmpty && !courses.contains(name)) {
+                              courses.add(name);
+                            }
+                          }
+                        }
+                      }
+
+                      return Container(
+                        decoration: BoxDecoration(
+                          color: Colors.white,
+                          borderRadius: BorderRadius.circular(18),
+                          boxShadow: [
+                            BoxShadow(
+                              color: Colors.black.withOpacity(0.05),
+                              blurRadius: 10,
+                            ),
+                          ],
+                        ),
+                        child: DropdownButtonFormField<String>(
+                          isExpanded: true,
+                          value: selectedCourse.isEmpty ? null : selectedCourse,
+                          decoration: InputDecoration(
+                            border: InputBorder.none,
+                            prefixIcon: Container(
+                              margin: const EdgeInsets.all(8),
+                              decoration: BoxDecoration(
+                                color: const Color(0xFF6A11CB).withOpacity(0.1),
+                                shape: BoxShape.circle,
+                              ),
+                              child: const Icon(Icons.school, color: Color(0xFF6A11CB)),
+                            ),
+                            hintText: "Course",
+                          ),
+                          items: courses.map((course) {
+                            return DropdownMenuItem(
+                              value: course,
+                              child: Text(course),
+                            );
+                          }).toList(),
+                          onChanged: (value) {
+                            setState(() {
+                              selectedCourse = value ?? "";
+                            });
+                          },
+                        ),
+                      );
+                    },
+                  ),
+
+              const SizedBox(height: 15),
+
+              _filterField(
+                controller: feesC,
+                icon: Icons.currency_rupee,
+                label: "Maximum Fees",
+              ),
+
+              const SizedBox(height: 15),
+
+              _filterField(
+                controller: placementC,
+                icon: Icons.bar_chart,
+                label: "Minimum Placement %",
+              ),
+
+              const SizedBox(height: 15),
+
+                  const SizedBox(height: 15),
+
+                  Container(
+                    decoration: BoxDecoration(
+                      color: Colors.white,
+                      borderRadius: BorderRadius.circular(18),
+                      boxShadow: [
+                        BoxShadow(
+                          color: Colors.black.withOpacity(0.05),
+                          blurRadius: 10,
+                        ),
+                      ],
+                    ),
+                    child: DropdownButtonFormField<String>(
+                      isExpanded: true,
+                      value: selectedAccreditation.isEmpty ? null : selectedAccreditation,
+                      decoration: InputDecoration(
+                        border: InputBorder.none,
+                        prefixIcon: Container(
+                          margin: const EdgeInsets.all(8),
+                          decoration: BoxDecoration(
+                            color: const Color(0xFF6A11CB).withOpacity(0.1),
+                            shape: BoxShape.circle,
+                          ),
+                          child: const Icon(Icons.verified, color: Color(0xFF6A11CB)),
+                        ),
+                        hintText: "Accreditation",
+                      ),
+                      items: const [
+                        DropdownMenuItem(
+                          value: "accredited",
+                          child: Text("Accredited"),
+                        ),
+                        DropdownMenuItem(
+                          value: "not accredited",
+                          child: Text("Not Accredited"),
+                        ),
+                      ],
+                      onChanged: (value) {
+                        setState(() {
+                          selectedAccreditation = value ?? "";
+                        });
+                      },
+                    ),
+                  ),
+
+              const SizedBox(height: 25),
+
+              SizedBox(
+                width: double.infinity,
+                height: 55,
+                child: ElevatedButton(
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: const Color(0xFF6A11CB),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(18),
+                    ),
+                  ),
+                  onPressed: () {
+
+                    setState(() {
+                      selectedLocation =
+                          locationC.text.trim().toLowerCase();
+
+
+
+                      selectedFees =
+                          feesC.text.trim();
+
+                      selectedPlacement =
+                          placementC.text.trim();
+
+                      selectedAccreditation =
+                          accC.text.trim().toLowerCase();
+                    });
+
+                    Navigator.pop(context);
+
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (context) => ExploreCollegesPage(
+                          location: selectedLocation,
+                          course: selectedCourse,
+                          maxFees: int.tryParse(selectedFees),
+                          minPlacement: int.tryParse(selectedPlacement),
+                          accreditation: selectedAccreditation,
+                        ),
+                      ),
+                    );
+
+                  },
+                  child: const Text(
+                    "Apply Filters",
+                    style: TextStyle(
+                      fontWeight: FontWeight.bold,
+                      color: Colors.white,
+                    ),
+                  ),
+                ),
+              ),
+
+              const SizedBox(height: 10),
+
+              TextButton(
+                onPressed: () {
+
+                  setState(() {
+                    selectedLocation = "";
+                    selectedCourse = "";
+                    selectedFees = "";
+                    selectedPlacement = "";
+                    selectedAccreditation = "";
+                  });
+
+                  Navigator.pop(context);
+                },
+                child: const Text(
+                  "Clear Filters",
+                  style: TextStyle(
+                    color: Colors.grey,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+              ),
+              ],
+            ),
+          ),
+          );
+        },
+
+
+    );
+  }
+
+  Widget _filterField({
+    required TextEditingController controller,
+    required IconData icon,
+    required String label,
+  }) {
+    return Container(
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(18),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.05),
+            blurRadius: 10,
+          ),
+        ],
+      ),
+      child: TextField(
+        controller: controller,
+        decoration: InputDecoration(
+          border: InputBorder.none,
+          prefixIcon: Container(
+            margin: const EdgeInsets.all(8),
+            decoration: BoxDecoration(
+              color: const Color(0xFF6A11CB).withOpacity(0.1),
+              shape: BoxShape.circle,
+            ),
+            child: Icon(icon, color: const Color(0xFF6A11CB)),
+          ),
+          hintText: label,
+        ),
+      ),
+    );
+  }
 
   Widget _collegeCardFromFirestore({
     required String docId,
@@ -793,7 +1269,7 @@ class _HomePageState extends State<HomePage> {
   }) {
     return Container(
       margin: const EdgeInsets.only(bottom: 16),
-      padding: const EdgeInsets.all(12),
+      padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
         color: Colors.white,
         borderRadius: BorderRadius.circular(16),
@@ -847,7 +1323,7 @@ class _HomePageState extends State<HomePage> {
                     location,
                     style: const TextStyle(color: Colors.black54),
                   ),
-                const SizedBox(height: 8),
+                const SizedBox(height: 16),
                 ElevatedButton(
                   onPressed: () {
                     Navigator.push(
