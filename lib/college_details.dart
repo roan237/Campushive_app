@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 
 class CollegeDetailsPage extends StatelessWidget {
   final String docId;
@@ -237,26 +238,56 @@ class CollegeDetailsPage extends StatelessWidget {
                     ),
                   ),
                   onPressed: () async {
+                    // 2. Get the actual logged-in user
+                    final User? user = FirebaseAuth.instance.currentUser;
 
-                    const userId = "demoUser";
+                    // 3. Check if the user is logged in
+                    if (user == null) {
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        const SnackBar(
+                          content: Text("Please login to save favorites! 🔑"),
+                          backgroundColor: Colors.orange,
+                        ),
+                      );
+                      return;
+                    }
 
-                    await FirebaseFirestore.instance
-                        .collection("favorites")
-                        .doc(userId)
-                        .collection("colleges")
-                        .doc(docId)
-                        .set({
-                      "name": data["name"],
-                      "location": data["location"],
-                      "imageUrl": data["imageUrl"],
-                    });
+                    // 4. Use the real User ID (UID)
+                    final String userId = user.uid;
 
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      const SnackBar(
-                        content: Text("Added to Favorites ❤️"),
-                      ),
-                    );
+                    try {
+                      // Show a loading indicator or simple feedback
+                      await FirebaseFirestore.instance
+                          .collection("favorites")
+                          .doc(userId) // Now saving to the unique user folder
+                          .collection("colleges")
+                          .doc(docId) // Uses the specific college document ID
+                          .set({
+                        "name": data["name"],
+                        "location": data["location"],
+                        "imageUrl": data["imageUrl"],
+                        "addedAt": FieldValue.serverTimestamp(), // Useful for sorting by "recently added"
+                      });
 
+                      if (context.mounted) {
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          const SnackBar(
+                            content: Text("Added to Favorites ❤️"),
+                            backgroundColor: Colors.green,
+                          ),
+                        );
+                      }
+                    } catch (e) {
+                      // This catches errors, like if your Security Rules block the request
+                      if (context.mounted) {
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          SnackBar(
+                            content: Text("Failed to add: $e"),
+                            backgroundColor: Colors.red,
+                          ),
+                        );
+                      }
+                    }
                   },
                   icon: const Icon(Icons.favorite, color: Colors.white),
                   label: const Text(

@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
-import 'main.dart';
-import 'edit.dart';
+import 'package:firebase_auth/firebase_auth.dart'; // 1. Added for SignOut
+import 'package:shared_preferences/shared_preferences.dart'; // 2. Added to clear memory
 import 'myactivity.dart';
+import 'login.dart';
 
-// ========================= MY PROFILE PAGE =========================
 class MyProfilePage extends StatelessWidget {
   const MyProfilePage({super.key});
 
@@ -22,42 +22,22 @@ class MyProfilePage extends StatelessWidget {
             fontWeight: FontWeight.bold,
           ),
         ),
-        actions: [
-          IconButton(
-            icon: const Icon(Icons.menu_rounded, color: Colors.deepPurple),
-            onPressed: () {
-              ScaffoldMessenger.of(context).showSnackBar(
-                const SnackBar(content: Text("Menu clicked")),
-              );
-            },
-          ),
-        ],
       ),
       body: SingleChildScrollView(
         padding: const EdgeInsets.all(18),
         child: Column(
           children: [
-            // TOP PROFILE CARD
+            // ... (Your existing Profile Card code stays here) ...
             Container(
               width: double.infinity,
               padding: const EdgeInsets.all(18),
               decoration: BoxDecoration(
                 borderRadius: BorderRadius.circular(22),
                 gradient: const LinearGradient(
-                  colors: [
-                    Color(0xFF6A11CB),
-                    Color(0xFF2575FC),
-                  ],
+                  colors: [Color(0xFF6A11CB), Color(0xFF2575FC)],
                   begin: Alignment.topLeft,
                   end: Alignment.bottomRight,
                 ),
-                boxShadow: [
-                  BoxShadow(
-                    color: Colors.black.withOpacity(0.12),
-                    blurRadius: 15,
-                    offset: const Offset(0, 8),
-                  ),
-                ],
               ),
               child: Row(
                 children: [
@@ -68,41 +48,16 @@ class MyProfilePage extends StatelessWidget {
                       color: Colors.white.withOpacity(0.22),
                       borderRadius: BorderRadius.circular(18),
                     ),
-                    child: const Icon(
-                      Icons.person_rounded,
-                      color: Colors.white,
-                      size: 38,
-                    ),
+                    child: const Icon(Icons.person_rounded, color: Colors.white, size: 38),
                   ),
                   const SizedBox(width: 14),
                   const Expanded(
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        Text(
-                          "Welcome back 👋",
-                          style: TextStyle(
-                            color: Colors.white70,
-                            fontSize: 13,
-                          ),
-                        ),
+                        Text("Welcome back 👋", style: TextStyle(color: Colors.white70, fontSize: 13)),
                         SizedBox(height: 4),
-                        Text(
-                          "CampusHive User",
-                          style: TextStyle(
-                            color: Colors.white,
-                            fontSize: 18,
-                            fontWeight: FontWeight.bold,
-                          ),
-                        ),
-                        SizedBox(height: 4),
-                        Text(
-                          "Manage your profile and saved activities",
-                          style: TextStyle(
-                            color: Colors.white70,
-                            fontSize: 13,
-                          ),
-                        ),
+                        Text("CampusHive User", style: TextStyle(color: Colors.white, fontSize: 18, fontWeight: FontWeight.bold)),
                       ],
                     ),
                   )
@@ -112,9 +67,7 @@ class MyProfilePage extends StatelessWidget {
 
             const SizedBox(height: 28),
 
-            // ===================== BUTTONS =====================
-
-            // MY ACTIVITY
+            // MY ACTIVITY BUTTON
             _profileButton(
               context: context,
               title: "My Activity",
@@ -122,40 +75,29 @@ class MyProfilePage extends StatelessWidget {
               icon: Icons.local_activity_rounded,
               color: const Color(0xFF6A11CB),
               onTap: () {
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(builder: (_) => const MyActivityPage()),
-                );
+                Navigator.push(context, MaterialPageRoute(builder: (_) => const MyActivityPage()));
               },
             ),
 
             const SizedBox(height: 14),
 
-            // EDIT PROFILE (includes change password inside)
-            _profileButton(
-              context: context,
-              title: "Edit Profile",
-              subtitle: "Update details & password",
-              icon: Icons.edit_rounded,
-              color: const Color(0xFF2575FC),
-              onTap: () {
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(builder: (_) => const EditProfilePage()),
-                );
-              },
-            ),
-
-            const SizedBox(height: 14),
-
-            // LOGOUT
+            // LOGOUT BUTTON (Updated Logic)
             _profileButton(
               context: context,
               title: "Logout",
               subtitle: "Sign out of your account",
               icon: Icons.logout_rounded,
               color: Colors.redAccent,
-              onTap: () {
+              onTap: () async {
+                // 3. LOGIC: Clear "Remember Me" and Sign out Firebase
+                final prefs = await SharedPreferences.getInstance();
+                await prefs.setBool('isLoggedIn', false); // This is key!
+
+                await FirebaseAuth.instance.signOut();
+
+                if (!context.mounted) return;
+
+                // 4. Redirect to Login and block "Back" button
                 Navigator.pushAndRemoveUntil(
                   context,
                   MaterialPageRoute(builder: (_) => const LoginPage()),
@@ -165,13 +107,9 @@ class MyProfilePage extends StatelessWidget {
             ),
 
             const SizedBox(height: 18),
-
             Text(
               "CampusHive • Your college companion 🐝",
-              style: TextStyle(
-                color: Colors.grey.shade600,
-                fontSize: 13,
-              ),
+              style: TextStyle(color: Colors.grey.shade600, fontSize: 13),
             ),
           ],
         ),
@@ -179,7 +117,7 @@ class MyProfilePage extends StatelessWidget {
     );
   }
 
-  // ===================== BUTTON UI =====================
+  // ... (Keep your _profileButton UI helper code at the bottom) ...
   Widget _profileButton({
     required BuildContext context,
     required String title,
@@ -221,36 +159,16 @@ class MyProfilePage extends StatelessWidget {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text(
-                    title,
-                    style: const TextStyle(
-                      fontSize: 16,
-                      fontWeight: FontWeight.bold,
-                      color: Color(0xFF2D2D2D),
-                    ),
-                  ),
+                  Text(title, style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: Color(0xFF2D2D2D))),
                   const SizedBox(height: 4),
-                  Text(
-                    subtitle,
-                    style: TextStyle(
-                      fontSize: 13,
-                      color: Colors.grey.shade600,
-                    ),
-                  ),
+                  Text(subtitle, style: TextStyle(fontSize: 13, color: Colors.grey.shade600)),
                 ],
               ),
             ),
-            const Icon(
-              Icons.arrow_forward_ios_rounded,
-              size: 18,
-              color: Colors.grey,
-            ),
+            const Icon(Icons.arrow_forward_ios_rounded, size: 18, color: Colors.grey),
           ],
         ),
       ),
     );
   }
 }
-
-
-

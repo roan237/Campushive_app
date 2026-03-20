@@ -32,7 +32,7 @@ dependencies:
     sdk: flutter
 
   cupertino_icons: ^1.0.8
-
+  shared_preferences: ^2.2.2
   firebase_core: ^2.27.0
   firebase_auth: ^4.17.0
   cloud_firestore: ^4.15.0
@@ -44,6 +44,7 @@ dependencies:
 
 
 dev_dependencies:
+  flutter_launcher_icons: "^0.13.1"
   flutter_test:
     sdk: flutter
 
@@ -95,3 +96,9 @@ flutter:
   #
   # For details regarding fonts from package dependencies,
   # see https://flutter.dev/to/font-from-package
+flutter_launcher_icons:
+  android: "launcher_icon"
+  ios: true
+  image_path: "assets/images/logo.png"
+  adaptive_icon_background: "#4B1D6D" # Your theme purple
+  adaptive_icon_foreground: "assets/images/logo.png"
