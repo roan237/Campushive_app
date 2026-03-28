@@ -53,8 +53,12 @@ class CollegeDetailsPage extends StatelessWidget {
           // Field has a space: "Placement Ratio"
           final String placementRatio =
           (data["Placement Ratio"] ?? "").toString();
+          final String? type = data["type"]?.toString();
           final List courses =
           (data["courses"] is List) ? data["courses"] : [];
+          final List contact = (data["contact"] is List) ? data["contact"] : [];
+
+
 
           // Courses array
 
@@ -155,12 +159,21 @@ class CollegeDetailsPage extends StatelessWidget {
                           fontWeight: FontWeight.w600,
                         ),
                       ),
+
+                    const SizedBox(height: 10), // Keeps the spacing consistent
+
+                    // ✅ Added College Type here
+                    if (type != null && type!.trim().isNotEmpty)
+                      Text(
+                        "College Type: ${type!.toUpperCase()}",
+                        style: const TextStyle(
+                          fontWeight: FontWeight.w600,
+                        ),
+                      ),
                   ],
                 ),
               ),
-
               const SizedBox(height: 16),
-
               // ---------------- COURSES CARD ----------------
               if (courses.isNotEmpty)
                 Container(
@@ -225,6 +238,52 @@ class CollegeDetailsPage extends StatelessWidget {
                 ),
 
               const SizedBox(height: 18),
+
+              if (contact.isNotEmpty)
+                Container(
+                  padding: const EdgeInsets.all(16),
+                  decoration: BoxDecoration(
+                    color: Colors.white,
+                    borderRadius: BorderRadius.circular(18),
+                    boxShadow: const [
+                      BoxShadow(color: Colors.black12, blurRadius: 10),
+                    ],
+                  ),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      const Text(
+                        "Contact Information",
+                        style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                      ),
+                      const SizedBox(height: 12),
+
+                      // Email (Index 0 in your screenshot)
+                      if (contact.isNotEmpty)
+                        Padding(
+                          padding: const EdgeInsets.only(bottom: 8.0),
+                          child: Row(
+                            children: [
+                              const Icon(Icons.email_outlined, size: 20, color: Colors.deepPurple),
+                              const SizedBox(width: 10),
+                              Text(contact[0].toString(), style: const TextStyle(fontSize: 15)),
+                            ],
+                          ),
+                        ),
+
+                      // Phone (Index 1 in your screenshot)
+                      if (contact.length > 1)
+                        Row(
+                          children: [
+                            const Icon(Icons.phone_outlined, size: 20, color: Colors.deepPurple),
+                            const SizedBox(width: 10),
+                            Text(contact[1].toString(), style: const TextStyle(fontSize: 15)),
+                          ],
+                        ),
+                    ],
+                  ),
+                ),
+              const SizedBox(height: 16),
 
               // ---------------- FAVORITES BUTTON (UI ONLY) ----------------
               SizedBox(

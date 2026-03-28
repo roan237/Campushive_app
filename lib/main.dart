@@ -254,7 +254,7 @@ class _HomePageState extends State<HomePage> {
   String selectedCourse = "";
   String selectedFees = "";
   String selectedPlacement = "";
-  String selectedAccreditation = "";
+  String selectedType = "";
   @override
   void dispose() {
     searchC.dispose();
@@ -476,7 +476,7 @@ class _HomePageState extends State<HomePage> {
                 stream: FirebaseFirestore.instance
                     .collection("colleges")
                     .orderBy("ranking")
-                    .limit(5)
+                    .limit(10)
                     .snapshots(),
                 builder: (context, snapshot) {
 
@@ -525,7 +525,7 @@ class _HomePageState extends State<HomePage> {
                 stream: FirebaseFirestore.instance
                     .collection("colleges")
                     .orderBy("Placement Ratio", descending: true)
-                    .limit(5)
+                    .limit(10)
                     .snapshots(),
                 builder: (context, snapshot) {
 
@@ -678,7 +678,7 @@ class _HomePageState extends State<HomePage> {
     TextEditingController(text: selectedPlacement);
 
     TextEditingController accC =
-    TextEditingController(text: selectedAccreditation);
+    TextEditingController(text: selectedType);
 
     showModalBottomSheet(
       context: context,
@@ -814,8 +814,6 @@ class _HomePageState extends State<HomePage> {
 
                 const SizedBox(height: 15),
 
-                const SizedBox(height: 15),
-
                 Container(
                   decoration: BoxDecoration(
                     color: Colors.white,
@@ -829,7 +827,8 @@ class _HomePageState extends State<HomePage> {
                   ),
                   child: DropdownButtonFormField<String>(
                     isExpanded: true,
-                    value: selectedAccreditation.isEmpty ? null : selectedAccreditation,
+                    // ✅ Change this to your new variable (e.g., selectedType)
+                    value: selectedType.isEmpty ? null : selectedType,
                     decoration: InputDecoration(
                       border: InputBorder.none,
                       prefixIcon: Container(
@@ -838,23 +837,30 @@ class _HomePageState extends State<HomePage> {
                           color: const Color(0xFF6A11CB).withOpacity(0.1),
                           shape: BoxShape.circle,
                         ),
-                        child: const Icon(Icons.verified, color: Color(0xFF6A11CB)),
+                        // ✅ Changed icon to 'account_balance' for college/government feel
+                        child: const Icon(Icons.account_balance, color: Color(0xFF6A11CB)),
                       ),
-                      hintText: "Accreditation",
+                      hintText: "College Type", // ✅ Updated Hint
                     ),
+                    // ✅ Updated items to match your 3 database types
                     items: const [
                       DropdownMenuItem(
-                        value: "accredited",
-                        child: Text("Accredited"),
+                        value: "government",
+                        child: Text("Government"),
                       ),
                       DropdownMenuItem(
-                        value: "not accredited",
-                        child: Text("Not Accredited"),
+                        value: "aided",
+                        child: Text("Aided"),
+                      ),
+                      DropdownMenuItem(
+                        value: "private",
+                        child: Text("Private"),
                       ),
                     ],
                     onChanged: (value) {
                       setState(() {
-                        selectedAccreditation = value ?? "";
+                        // ✅ Update your local variable
+                        selectedType = value ?? "";
                       });
                     },
                   ),
@@ -886,8 +892,6 @@ class _HomePageState extends State<HomePage> {
                         selectedPlacement =
                             placementC.text.trim();
 
-                        selectedAccreditation =
-                            accC.text.trim().toLowerCase();
                       });
 
                       Navigator.pop(context);
@@ -900,7 +904,7 @@ class _HomePageState extends State<HomePage> {
                             course: selectedCourse,
                             maxFees: int.tryParse(selectedFees),
                             minPlacement: int.tryParse(selectedPlacement),
-                            accreditation: selectedAccreditation,
+                            type: selectedType,
                           ),
                         ),
                       );
@@ -926,7 +930,7 @@ class _HomePageState extends State<HomePage> {
                       selectedCourse = "";
                       selectedFees = "";
                       selectedPlacement = "";
-                      selectedAccreditation = "";
+                      selectedType = "";
                     });
 
                     Navigator.pop(context);
